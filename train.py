@@ -54,6 +54,7 @@ class Trainer:
         # Set initial train configs
         self.min_val_loss = 100
         self.min_rmse_error = 100
+        self.last_chk_epoch = 0
         self.losses = {'epoch': list(), 'train': list(), 'valid': list(), 'valid_rmse': list()}
 
     @property
@@ -98,9 +99,12 @@ start_epoch : {self.start_epoch}
 epoch_print_range : {self.epoch_print_range}
 batch_size : {self.batch_size}
 torch_dtype : {train_config.torch_dtype}
-model_save_name : {self.model_save_name},
-whether_to_save : {self.whether_to_save},
+model_save_name : {self.model_save_name}
+whether_to_save : {self.whether_to_save}
 min_chkpoint_epoch : {self.min_chkpoint_epoch}
+min_val_loss : {self.min_val_loss}
+min_rmse_error : {self.min_rmse_error}
+last_chk_epoch : {self.last_chk_epoch}
 
         [Dataset]
 trainset : {self.trainset}
@@ -160,8 +164,8 @@ y0_list :
                 left_time = round(use_time / (epoch-self.start_epoch) * (self.epochs-epoch)) if (epoch-self.start_epoch) != 0 else 0
                 str_left_time = get_hh_mm_left_time(left_time)
 
-                info = 'Epoch: {:4d}/{} Cost: {:.6f} Validate Cost: {:.6f}, lr: {:f}, min_rmse: {:.6f}, use_time: {:5d}, left_time: {}'.format(
-                    epoch, self.epochs, mean_train_loss, mean_val_loss, last_lr, self.min_rmse_error, use_time, str_left_time)
+                info = 'Epoch: {:6d}/{} Train_loss: {:.6f} Valid_loss: {:.6f}, lr: {:f}, Min_rmse: {:.6f}, Last_chk_epoch: {}, Use_time: {}, Left_time: {}'.format(
+                    epoch, self.epochs, mean_train_loss, mean_val_loss, last_lr, self.min_rmse_error, self.last_chk_epoch, use_time, str_left_time)
                 print(f'\r{info}')
 
                 # Calculate RMSE Error & Plot
@@ -175,6 +179,7 @@ y0_list :
                         # Save model
                         if (self.whether_to_save is True) and (epoch >= self.min_chkpoint_epoch):
                             is_new_chkpoint = True
+                            self.last_chk_epoch = epoch
                             print(f'---------- New checkpoint updated! min_rmse : {self.min_rmse_error:.6f} kcal/mol')
                             self.save_checkpoint('chk_point', info, epoch, true_energies, model_energies, print_plot=print_plot)
                             print()
