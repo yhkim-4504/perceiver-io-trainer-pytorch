@@ -5,7 +5,8 @@ from math import sqrt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 plt.style.use('classic')
 
-def get_rmse_error(true_energies, predicted_energies):
+# return rmse value
+def get_rmse_error(true_energies, predicted_energies):  
     df = pd.DataFrame(list(zip(true_energies, predicted_energies)), columns=['True', 'Model'])
     true_energies = df['True']
     predicted_energies = df['Model']
@@ -62,7 +63,8 @@ def plot_val_true(true_energies, predicted_energies, title='Validset', save_path
 
     return rmse*23.061
 
-def get_hh_mm_left_time(left_time: int) -> str:
+# return seconds to hh mm format
+def get_hh_mm_left_time(left_time: int) -> str:  
     minutes, _ = divmod(left_time, 60)
     hours, minutes = divmod(minutes, 60)
     str_left_time = f'{hours:02}h {minutes:02}m'
@@ -70,7 +72,7 @@ def get_hh_mm_left_time(left_time: int) -> str:
     return str_left_time
 
 # One-hot-encode atom types(H,C,N,O,S)
-def one_hot_encoding(atom_types: list):
+def one_hot_encoding(atom_types: list): 
     atom_type_one_hot = []
     for atom in atom_types:
         if atom == 'H':
@@ -141,6 +143,7 @@ def check_max_atom_nums():  # max : 51, min : 17, mean : 35.39
         atom_nums.append(atom_num)
     print(max(atom_nums), min(atom_nums), round(mean(atom_nums)))
 
+# save y0 values from xyz files
 def save_y0_from_xyzs():  # max : 51, min : 17, mean : 35.39
     import os
     import pickle
