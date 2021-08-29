@@ -367,14 +367,14 @@ y0_list :
     def plot_losses(self, save_path=None):
         losses = self.losses
         if len(losses['epoch']) > 1:
-            plt.figure(figsize=(15, 5))
+            plt.figure(figsize=(18, 5))
             plt.title('Train & Valid Loss Plot for Epochs')
             plt.plot(losses['epoch'], np.log10(losses['train']), label='train_loss')
             if len(losses['valid']) == len(losses['epoch']):
                 plt.plot(losses['epoch'], np.log10(losses['valid']), label='valid_loss')
                 plt.plot(losses['epoch'], np.log10(losses['valid_rmse']), label='valid_rmse_loss')
             plt.legend(loc='upper right')
-            plt.xticks([x for x in range(0, losses['epoch'][-1]+1, int(losses['epoch'][-1]/20))])
+            plt.xticks([x for x in range(0, losses['epoch'][-1]+1, int(losses['epoch'][-1]/20))], fontsize=9)
             plt.xlabel('epoch')
             plt.ylabel('loss (log10)')
             if save_path is not None:

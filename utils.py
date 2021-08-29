@@ -29,7 +29,7 @@ def plot_val_true(true_energies, predicted_energies, title='Validset', save_path
     y =  (predicted_energies - true_energies.min())*23.061
     xlabel='True energies (kcal/mol)'
     ylabel='Predicted energies (kcal/mol)'
-    title = f'{title} - RMSE Error : {rmse*23.061:.6f}'
+    title = f'{title} - RMSE Error : {rmse*23.061:.6f} kcal/mol'
     x1 = np.array(x)
     y1 = np.array(y)
 
@@ -53,7 +53,7 @@ def plot_val_true(true_energies, predicted_energies, title='Validset', save_path
         ax.scatter(x1, y1, color='C2', alpha=0.5)
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
-        ax.set_title(title)
+        ax.set_title(title, fontsize=12)
         # ax.axis([xstart, xend, xstart, xend])
         ax.set_aspect(1.0)
         if save_path is not None:
