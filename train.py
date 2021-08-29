@@ -166,6 +166,7 @@ y0_list :
 
                 # Calculate RMSE Error & Plot
                 if self.print_validation is True:
+                    is_new_chkpoint = False
                     mean_mae_error, mean_rmse_error = get_rmse_error(true_energies, model_energies)
                     self.losses['valid_rmse'].append(mean_rmse_error)
                     
@@ -173,10 +174,11 @@ y0_list :
                         self.min_rmse_error = mean_rmse_error
                         # Save model
                         if (self.whether_to_save is True) and (epoch >= self.min_chkpoint_epoch):
+                            is_new_chkpoint = True
                             print(f'---------- New checkpoint updated! min_rmse : {self.min_rmse_error:.6f} kcal/mol')
                             self.save_checkpoint('chk_point', info, epoch, true_energies, model_energies, print_plot=print_plot)
                             print()
-                    else:
+                    if is_new_chkpoint is False:
                         plot_val_true(true_energies, model_energies, print_plot=print_plot)
                         self.plot_losses()
                         
