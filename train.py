@@ -44,6 +44,7 @@ class Trainer:
         self.queries_dim = model_config.queries_dim
         self.model, self.loss, self.optimizer, self.scheduler, self.losses = [None] * 5
         self.epochs = train_config.epochs
+        self.start_epoch = 0
         self.epoch_print_range = train_config.epoch_print_range
         self.batch_size = train_config.batch_size
         self.whether_to_save = train_config.whether_to_save
@@ -124,7 +125,7 @@ y0_list :
         with open(join(self.__model_save_name, f'trainer_info_{self.__model_save_name}.txt'), 'w') as f:
             f.write(str(self))
 
-        for epoch in range(epochs+1):
+        for epoch in range(self.start_epoch, epochs+1):
             self.model.train()
 
             # Train Batch
