@@ -5,7 +5,16 @@ from math import sqrt
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 plt.style.use('classic')
 
-def plot_val_true(true_energies, predicted_energies, save_path=None, print_plot=True):
+def get_rmse_error(true_energies, predicted_energies):
+    df = pd.DataFrame(list(zip(true_energies, predicted_energies)), columns=['True', 'Model'])
+    true_energies = df['True']
+    predicted_energies = df['Model']
+    mae = mean_absolute_error(true_energies, predicted_energies)
+    rmse = sqrt(mean_squared_error(true_energies, predicted_energies))
+
+    return mae, rmse*23.061
+
+def plot_val_true(true_energies, predicted_energies, title='Validset', save_path=None, print_plot=True):
     df = pd.DataFrame(list(zip(true_energies, predicted_energies)), columns=['True', 'Model'])
     true_energies = df['True']
     predicted_energies = df['Model']
@@ -20,7 +29,7 @@ def plot_val_true(true_energies, predicted_energies, save_path=None, print_plot=
     y =  (predicted_energies - true_energies.min())*23.061
     xlabel='True energies (kcal/mol)'
     ylabel='Predicted energies (kcal/mol)'
-    title = 'Validation'
+    title = f'{title} - RMSE Error : {rmse*23.061:.6f}'
     x1 = np.array(x)
     y1 = np.array(y)
 

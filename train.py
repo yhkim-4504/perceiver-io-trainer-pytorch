@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 from os.path import join
 from config import model_config, train_config, dset_config
-from utils import plot_val_true, get_hh_mm_left_time
+from utils import plot_val_true, get_hh_mm_left_time, get_rmse_error
 from dataset import DescriptorDatasetLoader
 from perceiver_io import PerceiverIO
 from torch.utils.data import DataLoader
@@ -166,17 +166,19 @@ y0_list :
 
                 # Calculate RMSE Error & Plot
                 if self.print_validation is True:
-                    mean_rmse_error = plot_val_true(true_energies, model_energies, print_plot=print_plot)
+                    mean_mae_error, mean_rmse_error = get_rmse_error(true_energies, model_energies)
                     self.losses['valid_rmse'].append(mean_rmse_error)
-                    self.plot_losses()
-
-                    if mean_rmse_error < self.min_rmse_error:
+                    
+                    if mean_rmse_error < self.min_rmse_error:  # new checkpoint
                         self.min_rmse_error = mean_rmse_error
                         # Save model
                         if (self.whether_to_save is True) and (epoch >= self.min_chkpoint_epoch):
                             print(f'---------- New checkpoint updated! min_rmse : {self.min_rmse_error:.6f} kcal/mol')
                             self.save_checkpoint('chk_point', info, epoch, true_energies, model_energies, print_plot=print_plot)
                             print()
+                    else:
+                        plot_val_true(true_energies, model_energies, print_plot=print_plot)
+                        self.plot_losses()
                         
         # Training Complete & Model Save
         print('---------- Training Done!')
@@ -193,7 +195,7 @@ y0_list :
             print(f'[{type} Validset Plot]')
             valid_rmse = plot_val_true(true_energies, model_energies, print_plot=True, save_path=valid_plot_fname)
             print(f'[{type} Testset Plot]')
-            test_rmse = self.plot_dataset(test_plot_fname, self.test_loader)
+            test_rmse = self.plot_dataset(title='Testset', dataloader=self.test_loader, save_path=test_plot_fname)
             print(f'[{type} Train & Valid Loss Plot]')
             self.plot_losses(save_path=loss_plot_fname)
 
@@ -354,12 +356,9 @@ y0_list :
             f.write(str(self))
         print(f'Log has been saved at {log_fname}')
 
-    def plot_dataset(self, save_path=None, dataloader=None):  # deafult : testset
-        if not dataloader:
-            print('Testset Plot')
-            dataloader = self.test_loader
+    def plot_dataset(self, title: str, dataloader: DataLoader, save_path=None):  # deafult : testset
         _, true_energies, model_energies = self.process_validation(dataloader)
-        rmse_error = plot_val_true(true_energies, model_energies, save_path=save_path)
+        rmse_error = plot_val_true(true_energies, model_energies, save_path=save_path, title=title)
 
         return rmse_error
 
