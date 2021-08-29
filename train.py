@@ -184,6 +184,7 @@ y0_list :
             valid_rmse = plot_val_true(true_energies, model_energies, print_plot=True, save_path=valid_plot_fname)
             print(f'[{type} Testset Plot]')
             test_rmse = self.plot_dataset(test_plot_fname, self.test_loader)
+            print(f'[{type} Train & Valid Loss Plot]')
             self.plot_losses(save_path=loss_plot_fname)
 
         self.save_model(type)
