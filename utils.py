@@ -53,6 +53,13 @@ def plot_val_true(true_energies, predicted_energies, save_path=None, print_plot=
 
     return rmse*23.061
 
+def get_hh_mm_left_time(left_time: int) -> str:
+    minutes, _ = divmod(left_time, 60)
+    hours, minutes = divmod(minutes, 60)
+    str_left_time = f'{hours:02}h {minutes:02}m'
+
+    return str_left_time
+
 # One-hot-encode atom types(H,C,N,O,S)
 def one_hot_encoding(atom_types: list):
     atom_type_one_hot = []

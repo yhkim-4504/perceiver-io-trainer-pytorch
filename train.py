@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import os
 from os.path import join
 from config import model_config, train_config, dset_config
-from utils import plot_val_true
+from utils import plot_val_true, get_hh_mm_left_time
 from dataset import DescriptorDatasetLoader
 from perceiver_io import PerceiverIO
 from torch.utils.data import DataLoader
@@ -154,9 +154,14 @@ y0_list :
                     self.losses['valid'].append(mean_val_loss)
                     if mean_val_loss < self.min_val_loss:
                         self.min_val_loss = mean_val_loss
+
+                # Get use_time & left_time                        
                 use_time = round(time.time() - start_time)
-                info = 'Epoch: {:4d}/{} Cost: {:.6f} Validate Cost: {:.6f}, lr: {:f}, use_time: {:5d}, min_rmse: {:.6f}'.format(
-                    epoch, self.epochs, mean_train_loss, mean_val_loss, last_lr, use_time, self.min_rmse_error)
+                left_time = round(use_time / (epoch-self.start_epoch) * self.epochs) if (epoch-self.start_epoch) != 0 else 0
+                str_left_time = get_hh_mm_left_time(left_time)
+
+                info = 'Epoch: {:4d}/{} Cost: {:.6f} Validate Cost: {:.6f}, lr: {:f}, min_rmse: {:.6f}, use_time: {:5d}, left_time: {}'.format(
+                    epoch, self.epochs, mean_train_loss, mean_val_loss, last_lr, self.min_rmse_error, use_time, str_left_time)
                 print(f'\r{info}')
 
                 # Calculate RMSE Error & Plot
