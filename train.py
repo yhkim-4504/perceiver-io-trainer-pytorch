@@ -89,6 +89,7 @@ scheduler : {self.scheduler}
 scheduler values :
 {scheduler_state_dict}
 epochs : {self.epochs}
+start_epoch : {self.start_epoch}
 epoch_print_range : {self.epoch_print_range}
 batch_size : {self.batch_size}
 torch_dtype : {train_config.torch_dtype}
