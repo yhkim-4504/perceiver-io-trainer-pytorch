@@ -51,6 +51,11 @@ class Trainer:
         self.min_chkpoint_epoch = train_config.min_chkpoint_epoch
         self.print_validation = train_config.print_validation
 
+        # Set initial train configs
+        self.min_val_loss = 100
+        self.min_rmse_error = 100
+        self.losses = {'epoch': list(), 'train': list(), 'valid': list(), 'valid_rmse': list()}
+
     @property
     def model_save_name(self):
         return self.__model_save_name
@@ -113,25 +118,21 @@ y0_list :
         return txt
 
     def train(self, print_plot=True):
-        epochs = self.epochs
         last_lr = self.optimizer.param_groups[0]['lr']
-        min_val_loss = 100
-        min_rmse_error = 100
+        train_losses = list()
         mean_train_loss = 100
         start_time = time.time()
-        train_losses = list()
-        self.losses = {'epoch': list(), 'train': list(), 'valid': list(), 'valid_rmse': list()}
 
         # Save Trainer Log
-        with open(join(self.__model_save_name, f'trainer_info_{self.__model_save_name}.txt'), 'w') as f:
+        with open(join(self.__model_save_name, f'trainer_info_{self.__model_save_name}_{self.start_epoch:06}_epoch.txt'), 'w') as f:
             f.write(str(self))
 
-        for epoch in range(self.start_epoch, epochs+1):
+        for epoch in range(self.start_epoch, self.epochs+1):
             self.model.train()
 
             # Train Batch
             for batch, (x, y, seqs) in enumerate(self.train_loader):
-                print(f'\rEpoch: {epoch:04}/{epochs}, batch: {batch+1:03}/{len(self.train_loader)}, Train_loss: {mean_train_loss:.6f}', end='')
+                print(f'\rEpoch: {epoch:04}/{self.epochs}, batch: {batch+1:03}/{len(self.train_loader)}, Train_loss: {mean_train_loss:.6f}', end='')
                 x, y = x.to(device), y.to(device)
                 mean_train_loss = self.forward_and_update(x, y, train_losses)
 
@@ -151,11 +152,11 @@ y0_list :
                 if self.print_validation is True:
                     mean_val_loss, true_energies, model_energies = self.process_validation(self.valid_loader)
                     self.losses['valid'].append(mean_val_loss)
-                    if mean_val_loss < min_val_loss:
-                        min_val_loss = mean_val_loss
+                    if mean_val_loss < self.min_val_loss:
+                        self.min_val_loss = mean_val_loss
                 use_time = round(time.time() - start_time)
                 info = 'Epoch: {:4d}/{} Cost: {:.6f} Validate Cost: {:.6f}, lr: {:f}, use_time: {:5d}, min_rmse: {:.6f}'.format(
-                    epoch, epochs, mean_train_loss, mean_val_loss, last_lr, use_time, min_rmse_error)
+                    epoch, self.epochs, mean_train_loss, mean_val_loss, last_lr, use_time, self.min_rmse_error)
                 print(f'\r{info}')
 
                 # Calculate RMSE Error & Plot
@@ -164,24 +165,26 @@ y0_list :
                     self.losses['valid_rmse'].append(mean_rmse_error)
                     self.plot_losses()
 
-                    if mean_rmse_error < min_rmse_error:
-                        min_rmse_error = mean_rmse_error
+                    if mean_rmse_error < self.min_rmse_error:
+                        self.min_rmse_error = mean_rmse_error
                         # Save model
                         if (self.whether_to_save is True) and (epoch >= self.min_chkpoint_epoch):
-                            print(f'---------- New checkpoint updated! min_rmse : {min_rmse_error:.6f} kcal/mol')
+                            print(f'---------- New checkpoint updated! min_rmse : {self.min_rmse_error:.6f} kcal/mol')
                             self.save_checkpoint('chk_point', info, epoch, true_energies, model_energies, print_plot=print_plot)
+                            print()
                         
         # Training Complete & Model Save
         print('---------- Training Done!')
         if self.whether_to_save is True:
             self.save_checkpoint('train_done', info, epoch, true_energies, model_energies, print_plot=print_plot)
+            print()
     
     def save_checkpoint(self, type: str, info: str, epoch: int, true_energies, model_energies, print_plot: bool):
         valid_rmse, test_rmse = -1, -1
         if print_plot is True:
-            valid_plot_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch}_valid_plot.png')
-            test_plot_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch}_test_plot.png')
-            loss_plot_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch}_loss_plot.png')
+            valid_plot_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch:06}_valid_plot.png')
+            test_plot_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch:06}_test_plot.png')
+            loss_plot_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch:06}_loss_plot.png')
             print(f'[{type} Validset Plot]')
             valid_rmse = plot_val_true(true_energies, model_energies, print_plot=True, save_path=valid_plot_fname)
             print(f'[{type} Testset Plot]')
