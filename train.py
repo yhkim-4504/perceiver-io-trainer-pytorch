@@ -157,7 +157,7 @@ y0_list :
 
                 # Get use_time & left_time                        
                 use_time = round(time.time() - start_time)
-                left_time = round(use_time / (epoch-self.start_epoch) * self.epochs) if (epoch-self.start_epoch) != 0 else 0
+                left_time = round(use_time / (epoch-self.start_epoch) * (self.epochs-epoch)) if (epoch-self.start_epoch) != 0 else 0
                 str_left_time = get_hh_mm_left_time(left_time)
 
                 info = 'Epoch: {:4d}/{} Cost: {:.6f} Validate Cost: {:.6f}, lr: {:f}, min_rmse: {:.6f}, use_time: {:5d}, left_time: {}'.format(
