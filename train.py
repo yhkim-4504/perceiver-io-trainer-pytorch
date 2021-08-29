@@ -332,7 +332,7 @@ y0_list :
         print(f'Model has been saved at {save_model_name}')
 
     def save_log(self, type: str, info: str, epoch: int, valid_rmse: float, test_rmse: float):
-        log_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch}_info.txt')
+        log_fname = join(self.model_save_name, f'{self.model_save_name}_{type}_{epoch:06}_info.txt')
 
         losses = self.losses
         str_losses = ''
