@@ -11,6 +11,7 @@ from utils import plot_val_true, get_hh_mm_left_time, get_rmse_error
 from dataset import DescriptorDatasetLoader
 from perceiver_io import PerceiverIO
 from torch.utils.data import DataLoader
+from shutil import rmtree
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
@@ -34,7 +35,17 @@ class Trainer:
         # Create workspace folder
         self.__model_save_name = train_config.model_save_name
         print(f'Creating folder... Path : {self.__model_save_name}')
-        os.mkdir(self.__model_save_name)
+        try:
+            os.mkdir(self.__model_save_name)
+        except FileExistsError as err_info:
+            print(err_info)
+            abs_save_path = os.path.abspath(self.__model_save_name)
+            input_chr = input(f'Enter y to delete {abs_save_path} folder! Otherwise exit.')
+            if input_chr == 'y':
+                rmtree(abs_save_path)
+            else:
+                raise Exception('Exit')
+
 
         # Dataset Load
         dset_loader = DescriptorDatasetLoader()
