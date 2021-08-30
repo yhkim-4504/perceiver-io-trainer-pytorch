@@ -43,6 +43,7 @@ class Trainer:
             input_chr = input(f'Enter y to delete {abs_save_path} folder! Otherwise exit.')
             if input_chr == 'y':
                 rmtree(abs_save_path)
+                os.mkdir(abs_save_path)
             else:
                 raise Exception('Exit')
 
