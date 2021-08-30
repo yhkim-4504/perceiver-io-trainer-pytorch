@@ -32,7 +32,7 @@ class DescriptorDatasetLoader:
 
         if self.__saved_dset_path is None:
             # Get Sequences
-            dipeps = os.listdir(dset_config.xyzs_path)
+            dipeps = sorted(os.listdir(dset_config.xyzs_path))
             compare_dipeps = dipeps if dset_config.use_all_dipeps else dset_config.use_dipeps
             dset_path = {seq: dict() for seq in compare_dipeps}
 
@@ -106,6 +106,14 @@ class DescriptorDatasetLoader:
         train_num = round(use_num_dipeptides * dset_config.train_val_split)
         valid_num = round((use_num_dipeptides - train_num) * dset_config.val_test_split)
         test_num = int(use_num_dipeptides - train_num - valid_num)
+
+        if train_num == 0 or valid_num == 0 or test_num == 0:
+            print(f"""\
+            total_atom_num : {len(x)}, atom_num : {atom_num}
+            train_num : {train_num}, valid_num : {valid_num}, test_num : {test_num}
+            {seq} sequence has been excluded!
+            """)
+            return (None, None), (None, None), (None, None), None
 
         # Preprocess inputs
         input_preprocess_values = dict()
@@ -188,9 +196,13 @@ class DescriptorDatasetLoader:
         seqs = {'train': list(), 'valid': list(), 'test': list()}
         is_first = True
 
-        for seq in self.dset_path.keys():
+        for i, seq in enumerate(self.dset_path.keys(), 1):
+            print(f'--------- {i:03}/{len(self.dset_path.keys())}')
             (x_train_seq, y_train_seq), (x_valid_seq, y_valid_seq), (x_test_seq, y_test_seq), input_preprocess_values = self.load_seq_dataset(seq)
+            if x_train_seq is None:
+                continue
             input_preprocess_values_list[seq] = input_preprocess_values
+
             if is_first:
                 x_train, y_train = x_train_seq, y_train_seq
                 x_valid, y_valid = x_valid_seq, y_valid_seq
