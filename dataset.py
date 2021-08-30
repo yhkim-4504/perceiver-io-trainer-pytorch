@@ -3,6 +3,7 @@ import pickle
 import numpy as np
 import re
 import torch
+import random
 from os.path import join
 from glob import glob
 from utils import save_y0_from_xyzs, one_hot_encoding, min_max_normalize, standardization
@@ -175,9 +176,12 @@ class DescriptorDatasetLoader:
             raise Exception(f'energy length error! : {len(x)} != {len(y)}')
         y = np.array(y, dtype=np.float64)
 
-        x_train, y_train = x[:train_num], y[:train_num]
-        x_valid, y_valid = x[train_num:train_num+valid_num], y[train_num:train_num+valid_num]
-        x_test, y_test = x[train_num+valid_num:train_num+valid_num+test_num], y[train_num+valid_num:train_num+valid_num+test_num]
+        rand_idx = [idx for idx in range(len(x))]
+        rand_idx = random.sample(rand_idx, len(rand_idx))
+        train_idx, valid_idx, test_idx = rand_idx[:train_num], rand_idx[train_num:train_num+valid_num], rand_idx[train_num+valid_num:train_num+valid_num+test_num]
+        x_train, y_train = x[train_idx], y[train_idx]
+        x_valid, y_valid = x[valid_idx], y[valid_idx]
+        x_test, y_test = x[test_idx], y[test_idx]
 
         print(f"""\
             total_atom_num : {len(x)*atom_num}, total_dipeptides_num : {len(y)}, atom_num : {atom_num}
