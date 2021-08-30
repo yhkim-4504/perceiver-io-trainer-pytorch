@@ -141,13 +141,13 @@ y0_list :
                 mean_train_loss = self.forward_and_update(x, y, train_losses)
 
             # Scheduler Step
-            if self.scheduler is not None:
+            if (self.scheduler is not None) and (epoch >= 1):
                 self.scheduler.step()
                 last_lr = self.scheduler.get_last_lr()[0]
                 
             # Print Epoch info                
             if epoch % self.epoch_print_range == 0:
-                mean_train_loss = sum(train_losses) / len(train_losses)
+                mean_train_loss = sum(train_losses) / len(train_losses) if epoch >= 1 else mean_train_loss
                 train_losses.clear()
                 self.losses['epoch'].append(epoch)
                 self.losses['train'].append(mean_train_loss)
