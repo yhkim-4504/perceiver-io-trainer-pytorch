@@ -148,7 +148,7 @@ y0_list :
 
             # Train Batch
             for batch, (x, y, seqs) in enumerate(self.train_loader):
-                print(f'\rEpoch: {epoch:04}/{self.epochs}, batch: {batch+1:03}/{len(self.train_loader)}, Train_loss: {mean_train_loss:.6f}', end='')
+                print(f'\rEpoch: {epoch:6d}/{self.epochs}, batch: {batch+1:03}/{len(self.train_loader)}, Train_loss: {mean_train_loss:.6f}', end='')
                 x, y = x.to(device), y.to(device)
                 mean_train_loss = self.forward_and_update(x, y, train_losses)
 
@@ -394,7 +394,8 @@ y0_list :
                 plt.plot(losses['epoch'], np.log10(losses['valid']), label='valid_loss')
                 plt.plot(losses['epoch'], np.log10(losses['valid_rmse']), label='valid_rmse_loss')
             plt.legend(loc='upper right')
-            plt.xticks([x for x in range(0, losses['epoch'][-1]+1, int(losses['epoch'][-1]/20))], fontsize=9)
+            tick = int(losses['epoch'][-1]/20) if int(losses['epoch'][-1]/20) >= 1 else 1
+            plt.xticks([x for x in range(0, losses['epoch'][-1]+1, tick)], fontsize=9)
             plt.xlabel('epoch')
             plt.ylabel('loss (log10)')
             if save_path is not None:
