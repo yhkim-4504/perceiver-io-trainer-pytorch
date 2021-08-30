@@ -62,6 +62,7 @@ class Trainer:
         self.whether_to_save = train_config.whether_to_save
         self.min_chkpoint_epoch = train_config.min_chkpoint_epoch
         self.print_validation = train_config.print_validation
+        self.pretrained_model = None
 
         # Set initial train configs
         self.min_val_loss = 100
@@ -99,6 +100,7 @@ latent_dim_head = {model_config.latent_dim_head}
 weight_tie_layers = {model_config.weight_tie_layers}
 self_per_cross_attn = {model_config.self_per_cross_attn}
 Count of model parameters : {self.param_count:,}
+Pretrained_model : {self.pretrained_model}
 
         [Train]
 loss_type : {self.loss}
@@ -253,6 +255,7 @@ y0_list :
 
         if state_dict_path is not None:
             model.load_state_dict(torch.load(state_dict_path))
+            self.pretrained_model = state_dict_path
             print(f'Pretrained model loaded from {state_dict_path}')
             
         self.model = model.to(device)
