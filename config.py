@@ -45,23 +45,24 @@ optimizer_config = EasyDict(
 )
 
 # dataset option config
-preprocessing_type = {'min_max_normalize': 'min_max_normalize', 'standardization': 'standardization'}  # dataset preprocessing type
+input_preprocessing_type = {'min_max_normalize': 'min_max_normalize', 'standardization': 'standardization'}  # dataset preprocessing type
+output_preprocessing_type = {'y0_subtract': 'y0_subtract', 'mean_subtract': 'mean_subtract'}  # total energy preproceesing type
 dset_config = EasyDict(
     {
         'saved_dset_path': None,  # if saved_dset_path is not None, load dataset from saved_dset_path.
-        'xyzs_path': r'dataset/xyzs',  # xyzs path
-        'descriptors_path': r'dataset/descriptors',  # descriptors path
+        'xyzs_path': r'C:\Users\ky450\Documents\PythonScripts\github\gap\data\dipeptides',  # xyzs path
+        'descriptors_path': r'dataset',  # descriptors path
         'y0_list_path': r'y0_list.pk',  # y0_list path, if doesn't exist, get y0 values and save at the path.
         'whether_to_save_dset': False,  # dataset will be saved at {train_config.model_save_name} folder.
         'use_all_dipeps': False,  # if use, all dipeptide sequences in xyzs_path will be used.
         'descriptor_dim': 80,  # 75(descriptor)+5(atom_type)
         'max_atom_num': 51,  # max atom number of all sequences from utils.check_max_atom_nums method.
-        'use_dipeps': ['EN', 'KN'],  # when use_all_dipeps is False -> only this sequcenes will be used.
+        'use_dipeps': ['EN'],  # when use_all_dipeps is False -> only this sequcenes will be used.
         'max_dset_ratio': 0.4,  # used dataset ratio just to use small dataset.
         'train_val_split': 0.5,  # train - valid split ratio
         'val_test_split': 0.7,  # valid - test split ratio
-        'input_preprocessing': preprocessing_type['standardization'],  # x(descriptor) preprocess
-        'output_preprocessing': None  # y(total_energy) preprocess : not implemented.
+        'input_preprocessing': input_preprocessing_type['standardization'],  # x(descriptor) preprocess
+        'output_preprocessing': output_preprocessing_type['mean_subtract']  # y(total_energy) preprocess : subtract y0 or mean(y) of each sequence
     }
 )
 
@@ -69,7 +70,7 @@ dset_config = EasyDict(
 train_config = EasyDict(
     {
         'epochs': 30000,
-        'batch_size': 2048,
+        'batch_size': 512,
         'epoch_print_range': 200,
         'print_validation': True,
         'initial_lr': 0.0006,

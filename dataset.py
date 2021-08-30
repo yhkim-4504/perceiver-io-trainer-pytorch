@@ -30,20 +30,26 @@ class DescriptorDatasetLoader:
     def __init__(self):
         self.__saved_dset_path = dset_config.saved_dset_path
         self.whether_to_save_dset = dset_config.whether_to_save_dset
+        self.output_preprocessing = dset_config.output_preprocessing
 
         if self.__saved_dset_path is None:
             # Get Sequences
             dipeps = sorted(os.listdir(dset_config.xyzs_path))
             compare_dipeps = dipeps if dset_config.use_all_dipeps else dset_config.use_dipeps
             dset_path = {seq: dict() for seq in compare_dipeps}
-
-            # Get y0 values
-            if os.path.exists(dset_config.y0_list_path):
-                with open(dset_config.y0_list_path, 'rb') as f:
-                    self.y0_list = pickle.load(f)
-                print('Load y0_list... Done.')
+            
+            if self.output_preprocessing == 'y0_subtract':
+                # Get y0 values
+                if os.path.exists(dset_config.y0_list_path):
+                    with open(dset_config.y0_list_path, 'rb') as f:
+                        self.y0_list = pickle.load(f)
+                    print('Load y0_list... Done.')
+                else:
+                    self.y0_list = save_y0_from_xyzs()
+            elif self.output_preprocessing == 'mean_subtract':
+                self.y0_list = dict()
             else:
-                self.y0_list = save_y0_from_xyzs()
+                raise Exception(f'output_preprocessing : {self.output_preprocessing} type does not exist.')
 
             # Get xyzs path
             for dipep in dipeps:
@@ -174,15 +180,23 @@ class DescriptorDatasetLoader:
 
         # Get atom energy(y_label)
         y = []
-        y0 = self.y0_list[seq]
         z_iter = re.finditer(r'\s+energy=(?P<energy>[+-]\d*\.?\d*)\s+', txt)
         for z in z_iter:
-            #y.append(float(z.group('energy')))
-            y.append(float(z.group('energy'))-y0)
+            y.append(float(z.group('energy')))
         # Error check
         if len(x) != len(y):
             raise Exception(f'energy length error! : {len(x)} != {len(y)}')
         y = np.array(y, dtype=np.float64)[rand_idx]
+
+        # output preprocessing
+        if self.output_preprocessing == 'y0_subtract':
+            y0 = self.y0_list[seq]
+        elif self.output_preprocessing == 'mean_subtract':
+            y0 = int(np.mean(y))
+            self.y0_list[seq] = y0
+        else:
+            raise Exception(f'output_preprocessing : {self.output_preprocessing} type does not exist.')
+        y = y - y0
 
         x_train, y_train = x[:train_num], y[:train_num]
         x_valid, y_valid = x[train_num:train_num+valid_num], y[train_num:train_num+valid_num]
