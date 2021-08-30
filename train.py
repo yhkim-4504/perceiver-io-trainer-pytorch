@@ -40,7 +40,7 @@ class Trainer:
         except FileExistsError as err_info:
             print(err_info)
             abs_save_path = os.path.abspath(self.__model_save_name)
-            input_chr = input(f'Enter y to delete {abs_save_path} folder! Otherwise exit.')
+            input_chr = input(f'Enter y to delete {abs_save_path} folder! Otherwise exit : ')
             if input_chr == 'y':
                 rmtree(abs_save_path)
                 os.mkdir(abs_save_path)
@@ -222,9 +222,12 @@ y0_list :
         self.save_log(type, info, epoch, valid_rmse, test_rmse)
 
     def load_dataloader(self):
-        self.train_loader = DataLoader(self.trainset, batch_size=self.batch_size, shuffle=True, drop_last=True)
-        self.valid_loader = DataLoader(self.validset, batch_size=self.batch_size, shuffle=False, drop_last=False)
-        self.test_loader = DataLoader(self.testset, batch_size=self.batch_size, shuffle=False, drop_last=False)
+        train_batch_size = self.batch_size if len(self.trainset) > self.batch_size else len(self.trainset)
+        valid_batch_size = self.batch_size if len(self.validset) > self.batch_size else len(self.validset)
+        test_batch_size = self.batch_size if len(self.testset) > self.batch_size else len(self.testset)
+        self.train_loader = DataLoader(self.trainset, batch_size=train_batch_size, shuffle=True, drop_last=True)
+        self.valid_loader = DataLoader(self.validset, batch_size=valid_batch_size, shuffle=False, drop_last=False)
+        self.test_loader = DataLoader(self.testset, batch_size=test_batch_size, shuffle=False, drop_last=False)
 
     def load_model(self, state_dict_path=None):
         model = PerceiverIO(
