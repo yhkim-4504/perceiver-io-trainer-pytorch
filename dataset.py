@@ -101,8 +101,14 @@ class DescriptorDatasetLoader:
         # Load descriptor dataset
         x = np.load(descriptor_path)
         x = np.real(x)
-
         num_dipeps = int(len(x) / atom_num)
+
+        # Random index
+        rand_idx = [idx for idx in range(num_dipeps)]
+        rand_idx = random.sample(rand_idx, len(rand_idx))
+        x = x.reshape(num_dipeps, atom_num, x.shape[-1])[rand_idx]
+
+        # Set train, valid, test nums
         use_num_dipeptides = round(num_dipeps * dset_config.max_dset_ratio)
         train_num = round(use_num_dipeptides * dset_config.train_val_split)
         valid_num = round((use_num_dipeptides - train_num) * dset_config.val_test_split)
@@ -122,17 +128,17 @@ class DescriptorDatasetLoader:
         if dset_config.input_preprocessing == 'min_max_normalize':
             print(f'Input Preprocessing : {dset_config.input_preprocessing}')
             input_preprocess_values['type'] = dset_config.input_preprocessing
-            x_train_min = np.min(x[:train_num*atom_num])
+            x_train_min = np.min(x[:train_num])
             input_preprocess_values['min'] = x_train_min
-            x_train_max = np.max(x[:train_num*atom_num])
+            x_train_max = np.max(x[:train_num])
             input_preprocess_values['max'] = x_train_max
             x = min_max_normalize(x, x_train_min, x_train_max)
         elif dset_config.input_preprocessing == 'standardization':
             print(f'Input Preprocessing : {dset_config.input_preprocessing}')
             input_preprocess_values['type'] = dset_config.input_preprocessing
-            x_train_mean = np.mean(x[:train_num*atom_num])
+            x_train_mean = np.mean(x[:train_num])
             input_preprocess_values['mean'] = x_train_mean
-            x_train_std = np.std(x[:train_num*atom_num])
+            x_train_std = np.std(x[:train_num])
             input_preprocess_values['std'] = x_train_std
             x = standardization(x, x_train_mean, x_train_std)
         else:
@@ -152,13 +158,15 @@ class DescriptorDatasetLoader:
                 break
         # One-hot-encode
         atom_type_one_hot = one_hot_encoding(atom_type)
+        atom_type_one_hot = atom_type_one_hot.reshape(num_dipeps, atom_num, atom_type_one_hot.shape[-1])[rand_idx]
         # Error check
-        if len(atom_type) != len(x):
-            raise Exception(f'atom_type length error! : {len(atom_type)} != {len(x)}')
+        if len(atom_type_one_hot) != len(x):
+            raise Exception(f'atom_type length error! : {len(atom_type_one_hot)} != {len(x)}')
 
         # Stack atom_type(n, 5) & x(n, 75) -> (n, 80) shape
-        x = np.hstack([atom_type_one_hot, x])
-        x = x.reshape(num_dipeps, atom_num, x.shape[-1])
+        x = np.concatenate([atom_type_one_hot, x], axis=-1)
+
+        # Concatenate extra atom num vectors
         extra_atom_num = dset_config.max_atom_num - atom_num
         if extra_atom_num >= 1:
             x = np.concatenate([x, np.zeros([num_dipeps, extra_atom_num, x.shape[-1]])], axis=1)
@@ -174,14 +182,11 @@ class DescriptorDatasetLoader:
         # Error check
         if len(x) != len(y):
             raise Exception(f'energy length error! : {len(x)} != {len(y)}')
-        y = np.array(y, dtype=np.float64)
+        y = np.array(y, dtype=np.float64)[rand_idx]
 
-        rand_idx = [idx for idx in range(len(x))]
-        rand_idx = random.sample(rand_idx, len(rand_idx))
-        train_idx, valid_idx, test_idx = rand_idx[:train_num], rand_idx[train_num:train_num+valid_num], rand_idx[train_num+valid_num:train_num+valid_num+test_num]
-        x_train, y_train = x[train_idx], y[train_idx]
-        x_valid, y_valid = x[valid_idx], y[valid_idx]
-        x_test, y_test = x[test_idx], y[test_idx]
+        x_train, y_train = x[:train_num], y[:train_num]
+        x_valid, y_valid = x[train_num:train_num+valid_num], y[train_num:train_num+valid_num]
+        x_test, y_test = x[train_num+valid_num:train_num+valid_num+test_num], y[train_num+valid_num:train_num+valid_num+test_num]
 
         print(f"""\
             total_atom_num : {len(x)*atom_num}, total_dipeptides_num : {len(y)}, atom_num : {atom_num}
