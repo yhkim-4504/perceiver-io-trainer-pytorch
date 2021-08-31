@@ -46,10 +46,8 @@ class DescriptorDatasetLoader:
                     print('Load y0_list... Done.')
                 else:
                     self.y0_list = save_y0_from_xyzs()
-            elif self.output_preprocessing == 'mean_subtract':
-                self.y0_list = dict()
             else:
-                raise Exception(f'output_preprocessing : {self.output_preprocessing} type does not exist.')
+                self.y0_list = dict()
 
             # Get xyzs path
             for dipep in dipeps:
@@ -195,7 +193,7 @@ class DescriptorDatasetLoader:
             y0 = int(np.mean(y))
             self.y0_list[seq] = y0
         else:
-            raise Exception(f'output_preprocessing : {self.output_preprocessing} type does not exist.')
+            self.y0_list[seq] = 0
         y = y - y0
 
         x_train, y_train = x[:train_num], y[:train_num]
